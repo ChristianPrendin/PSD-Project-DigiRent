@@ -9,14 +9,13 @@ Description of the process compliant with the case study description. Use:
 * member B (Christian, Prendin, 10827556)
 
 ## Choreographed process
-Short description of the choreographed process
+*description TODO*
 
-place here an image of the BPMN Choreography diagram
-
+<p align="center">
+  <img src="processes/coreography.png" alt="Coreography Diagram" width="800">
+</p>
 
 ## Collaboration Diagram
-
-place here an image of the BPMN Collaboration diagram, where the only white box is for the DigiRent, the others will be black-boxes
 
 <p align="center">
   <img src="processes/collaboration.png" alt="Collaboration Diagram" width="800">
