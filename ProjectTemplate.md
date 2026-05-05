@@ -26,16 +26,24 @@ The collaboration diagram models DigiRent as a white-box pool, showing its full 
 
 ## Petri Net
 
-place here the image of the PetriNet corresponding to the Baby360 executable model
+The Petri Net below corresponds to the orchestrated DigiRent process, derived from the collaboration diagram via standard BPMN-to-Petri-Net mapping. The net (36 places, 47 transitions, 96 arcs) has been verified in WoPeD and satisfies both the Workflow net property and the Soundness property: every reachable state can reach the final marking o, there are no dead transitions, and the process terminates cleanly. 
+
+<p align="center">
+  <img src="processes/PetriNet_DigiRent.png" alt="DigiRent Petri Net" width="1000">
+</p>
+
+The PNML source file is available at `processes/PetriNet_DigiRent.pnml`
 
 ## Third party services
 
-List of the third party services that corresponds to the black boxes in the collaboration diagram
+The following participants are modelled as black-box pools in the collaboration diagram. Their REST interfaces are specified in `services/api/DigiRent_OpenAPI.yaml`.
+ 
+**Customer:** initiates the rental process by submitting a request to DigiRent. Throughout the process the Customer retrieves apartment proposals, confirms or declines visit schedules, negotiates final terms, signs the rental agreement and submits payment.
+ 
+**Owner:** owns one or more apartments managed by DigiRent. When visit scheduling is required, DigiRent contacts the relevant Owner(s) to request available time slots. The Owner responds with their availability and receives the rent payment at the end of a successful process.
+ 
+**Commercial Partner:**  an external real-estate agency contacted by DigiRent when the internal apartment search is unsuccessful. The Partner provides a list of available apartments matching the customer's requirements. If the rental is concluded through a partner, DigiRent allocates an agreed percentage of the agency fee to that partner.
 
 ## Executable process
 
 Place here an image of the BPMN diagram corresponding to the executable model of the DigiRent process
-
-
-
-
