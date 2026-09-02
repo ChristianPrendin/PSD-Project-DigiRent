@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Customer Service API
+  version: 1.0.0
+  description: |
+    REST interface exposed by the Customer service, consumed by DigiRent
+    as part of the apartment rental process.
+
+    Requests are correlated to a rental process instance via the rentalId
+    field in the request body. Most customer-facing information in this
+    process (apartment shortlist, visit schedule, final terms, negotiation
+    outcome) is retrieved by the Customer directly from DigiRent's own
+    interface rather than pushed here; this service only receives the
+    final payment confirmation.
+
+paths:
+
+  /customers/{customerId}/payment-confirmations:
+    post:
+      summary: Send payment confirmation to customer
+      operationId: sendPaymentConfirmation
+      description: |
+        DigiRent notifies the Customer that the payment has been received
+        and processed, completing the rental process successfully.
+      parameters:
+        - $ref: '#/components/parameters/customerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentConfirmation'
+      responses:
+        '200':
+          description: Confirmation delivered to customer.
+
+components:
+
+  parameters:
+    customerId:
+      name: customerId
+      in: path
+      required: true
+      description: Unique identifier of the customer.
+      schema:
+        type: string
+
+  schemas:
+
+    PaymentConfirmation:
+      type: object
+      properties:
+        rentalId:
+          type: string
+        confirmedAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [confirmed]

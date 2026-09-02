@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: Owner Service API
+  version: 1.0.0
+  description: |
+    REST interface exposed by the Owner service, consumed by DigiRent as
+    part of the apartment rental process.
+
+    Requests are correlated to a rental process instance via the rentalId
+    field in the request body. After receiving a visit request, the Owner
+    is expected to respond asynchronously by calling
+    POST /rentals/{rentalId}/availabilities on DigiRent's own interface.
+
+paths:
+
+  /owners/{ownerId}/visit-requests:
+    post:
+      summary: Request visit availability from owner
+      operationId: requestOwnerAvailability
+      description: |
+        DigiRent contacts an Owner to request available time slots for
+        apartment visits. The Owner is expected to respond by calling
+        POST /rentals/{rentalId}/availabilities on DigiRent.
+      parameters:
+        - $ref: '#/components/parameters/ownerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VisitRequest'
+      responses:
+        '202':
+          description: Visit availability request accepted. Response will be sent asynchronously.
+
+  /owners/{ownerId}/payments:
+    post:
+      summary: Transfer rental payment to owner
+      operationId: transferToOwner
+      description: |
+        DigiRent transfers the rent payment directly to the Owner after a
+        successful rental process (internal phase, no commercial partner involved).
+      parameters:
+        - $ref: '#/components/parameters/ownerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnerPayment'
+      responses:
+        '200':
+          description: Payment successfully transferred to owner.
+
+components:
+
+  parameters:
+    ownerId:
+      name: ownerId
+      in: path
+      required: true
+      description: Unique identifier of the owner.
+      schema:
+        type: string
+
+  schemas:
+
+    VisitRequest:
+      type: object
+      required: [rentalId, apartmentId, requestedPeriodStart, requestedPeriodEnd]
+      properties:
+        rentalId:
+          type: string
+          description: Correlation key so the owner knows which rental request this refers to.
+        apartmentId:
+          type: string
+        requestedPeriodStart:
+          type: string
+          format: date
+        requestedPeriodEnd:
+          type: string
+          format: date
+
+    OwnerPayment:
+      type: object
+      required: [rentalId, amount]
+      properties:
+        rentalId:
+          type: string
+        amount:
+          type: number

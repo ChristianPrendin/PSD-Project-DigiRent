@@ -1,0 +1,141 @@
+openapi: 3.0.3
+info:
+  title: Commercial Partner Service API
+  version: 1.0.0
+  description: |
+    REST interface exposed by the Commercial Partner service, consumed by
+    DigiRent as part of the apartment rental process.
+
+    Requests are correlated to a rental process instance via the rentalId
+    field, carried in the request body or as a query parameter depending
+    on the endpoint.
+
+paths:
+
+  /partners/{partnerId}/rental-requests:
+    post:
+      summary: Send rental request to commercial partner
+      operationId: contactCommercialPartner
+      description: |
+        DigiRent contacts a Commercial Partner to request a list of available
+        apartments matching the customer's requirements, when the internal
+        search has been unsuccessful.
+      parameters:
+        - $ref: '#/components/parameters/partnerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerRentalRequest'
+      responses:
+        '202':
+          description: Partner rental request accepted. Apartment list will be made available.
+
+  /partners/{partnerId}/apartments:
+    get:
+      summary: Retrieve partner apartment list
+      operationId: getPartnerApartments
+      description: |
+        DigiRent retrieves the list of available apartments from a Commercial
+        Partner for a specific rental request.
+      parameters:
+        - $ref: '#/components/parameters/partnerId'
+        - name: rentalId
+          in: query
+          required: true
+          description: Correlation key identifying the rental request.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Partner apartment list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartnerApartment'
+        '404':
+          description: Partner or rental request not found.
+
+  /partners/{partnerId}/payments:
+    post:
+      summary: Transfer payment and fee to commercial partner
+      operationId: transferToPartner
+      description: |
+        DigiRent transfers the rent amount to the Owner via the Commercial
+        Partner and allocates the agreed agency fee to the Partner.
+        This endpoint covers both the parallel actions in the closing chain:
+        transfer to partner and allocate fee.
+      parameters:
+        - $ref: '#/components/parameters/partnerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerPayment'
+      responses:
+        '200':
+          description: Funds and fee successfully transferred to partner.
+
+components:
+
+  parameters:
+    partnerId:
+      name: partnerId
+      in: path
+      required: true
+      description: Unique identifier of the commercial partner.
+      schema:
+        type: string
+
+  schemas:
+
+    PartnerRentalRequest:
+      type: object
+      required: [rentalId, location, numberOfRooms, maxBudget, startDate, endDate]
+      properties:
+        rentalId:
+          type: string
+          description: DigiRent correlation key, forwarded to partner for routing responses.
+        location:
+          type: string
+        numberOfRooms:
+          type: integer
+        maxBudget:
+          type: number
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+
+    PartnerApartment:
+      type: object
+      properties:
+        apartmentId:
+          type: string
+        partnerId:
+          type: string
+        address:
+          type: string
+        price:
+          type: number
+        partnerFeePercentage:
+          type: number
+
+    PartnerPayment:
+      type: object
+      required: [rentalId, rentAmount, partnerFee]
+      properties:
+        rentalId:
+          type: string
+        rentAmount:
+          type: number
+          description: Total rent amount to be forwarded to the owner via the partner.
+        partnerFee:
+          type: number
+          description: Agency fee portion allocated to the commercial partner.
