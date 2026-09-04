@@ -7,11 +7,12 @@ info:
     as part of the apartment rental process.
 
     Requests are correlated to a rental process instance via the rentalId
-    field in the request body. Most customer-facing information in this
-    process (apartment shortlist, visit schedule, final terms, negotiation
-    outcome) is retrieved by the Customer directly from DigiRent's own
-    interface rather than pushed here; this service only receives the
-    final payment confirmation.
+    field in the request body. The actual content (apartment shortlist,
+    visit schedule, final terms, negotiation outcome) is retrieved by the
+    Customer directly from DigiRent's own interface rather than pushed
+    here. This service receives two kinds of push from DigiRent: a
+    lightweight stage notification when new content becomes available to
+    pull, and the final payment confirmation.
 
 paths:
 
@@ -33,6 +34,27 @@ paths:
       responses:
         '200':
           description: Confirmation delivered to customer.
+
+  /customers/{customerId}/notifications:
+    post:
+      summary: Notify customer that new information is available
+      operationId: notifyCustomer
+      description: |
+        DigiRent signals that new information is ready for the customer to
+        retrieve (e.g. an apartment shortlist or visit schedule). The
+        notification carries no business data; the customer is expected to
+        fetch the actual content from DigiRent's own interface.
+      parameters:
+        - $ref: '#/components/parameters/customerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerNotification'
+      responses:
+        '200':
+          description: Notification delivered to customer.
 
 components:
 
@@ -58,3 +80,16 @@ components:
         status:
           type: string
           enum: [confirmed]
+
+    CustomerNotification:
+      type: object
+      required: [rentalId, stage]
+      properties:
+        rentalId:
+          type: string
+        stage:
+          type: string
+          enum: [apartments_ready, visit_slots_ready, terms_ready, agreement_ready, payment_due]
+        message:
+          type: string
+          description: Optional human-readable text for display purposes.
