@@ -7,8 +7,10 @@ info:
     DigiRent as part of the apartment rental process.
 
     Requests are correlated to a rental process instance via the rentalId
-    field, carried in the request body or as a query parameter depending
-    on the endpoint.
+    field, carried in the request body. After being contacted, the Partner
+    is expected to respond asynchronously with its apartment list by
+    calling DigiRent's own interface (not defined in this file, since it
+    belongs to DigiRent rather than to this service).
 
 paths:
 
@@ -19,7 +21,10 @@ paths:
       description: |
         DigiRent contacts a Commercial Partner to request a list of available
         apartments matching the customer's requirements, when the internal
-        search has been unsuccessful.
+        search has been unsuccessful. The Partner is expected to respond
+        asynchronously; there is no guaranteed response time, so DigiRent
+        proceeds after a bounded wait even if this specific partner never
+        replies.
       parameters:
         - $ref: '#/components/parameters/partnerId'
       requestBody:
@@ -30,34 +35,7 @@ paths:
               $ref: '#/components/schemas/PartnerRentalRequest'
       responses:
         '202':
-          description: Partner rental request accepted. Apartment list will be made available.
-
-  /partners/{partnerId}/apartments:
-    get:
-      summary: Retrieve partner apartment list
-      operationId: getPartnerApartments
-      description: |
-        DigiRent retrieves the list of available apartments from a Commercial
-        Partner for a specific rental request.
-      parameters:
-        - $ref: '#/components/parameters/partnerId'
-        - name: rentalId
-          in: query
-          required: true
-          description: Correlation key identifying the rental request.
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Partner apartment list.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PartnerApartment'
-        '404':
-          description: Partner or rental request not found.
+          description: Partner rental request accepted. Apartment list will be sent asynchronously.
 
   /partners/{partnerId}/payments:
     post:
@@ -112,20 +90,6 @@ components:
         endDate:
           type: string
           format: date
-
-    PartnerApartment:
-      type: object
-      properties:
-        apartmentId:
-          type: string
-        partnerId:
-          type: string
-        address:
-          type: string
-        price:
-          type: number
-        partnerFeePercentage:
-          type: number
 
     PartnerPayment:
       type: object

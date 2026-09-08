@@ -89,7 +89,7 @@ components:
           type: string
         stage:
           type: string
-          enum: [apartments_ready, visit_slots_ready, terms_ready, agreement_ready, payment_due]
+          enum: [visit_slots_ready, agreement_ready, no_matching_apartment, apartments_exhausted]
         message:
           type: string
           description: Optional human-readable text for display purposes.
