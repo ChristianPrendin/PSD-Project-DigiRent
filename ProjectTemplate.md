@@ -36,7 +36,7 @@ The PNML source file is available at `processes/PetriNet_DigiRent.pnml`
 
 ## Third party services
 
-The following participants are modelled as black-box pools in the collaboration diagram. Their REST interfaces are specified in `services/api/DigiRent_OpenAPI.yaml`.
+The following participants are modelled as black-box pools in the collaboration diagram. Their REST interfaces are specified in `services/api/Customer_OpenAPI.yaml`, `services/api/Owner_OpenAPI.yaml`, and `services/api/CommercialPartner_OpenAPI.yaml` (one file per participant).
  
 **Customer:** initiates the rental process by submitting a request to DigiRent. Throughout the process the Customer retrieves apartment proposals, confirms or declines visit schedules, negotiates final terms, signs the rental agreement and submits payment.
  
@@ -46,4 +46,26 @@ The following participants are modelled as black-box pools in the collaboration 
 
 ## Executable process
 
-Place here an image of the BPMN diagram corresponding to the executable model of the DigiRent process
+The executable model implements the same orchestration described above, deployed
+on Camunda 7.24. It is split across two files: `DigiRent.bpmn` (top-level process,
+handling the internal/partner phases, the payment closing chain, and the 20-day
+boundary timer) and `ProposeAndNegotiate.bpmn` (the reusable "propose and
+negotiate" sub-process, invoked via Call Activity once for the internal phase and
+once per partner). Compared to the M1 collaboration diagram, the executable model
+adds one refinement: if the internal database returns zero matching apartments,
+the internal negotiation phase is skipped entirely and the process proceeds
+directly to the partner phase, avoiding an unnecessary round-trip with the
+customer over an empty list.
+
+Black-box participants (Customer, Owner, Commercial Partner) are simulated by
+Node.js/Express mocks — see `services/README.md` for how to run them, and
+`services/postman/DigiRent_Postman_Scenari.json` for the full test suite covering
+all demo scenarios.
+
+<p align="center">
+  <img src="processes/DigiRent.png" alt="Executable process diagram" width="1000">
+</p>
+
+<p align="center">
+  <img src="processes/ProposeAndNegotiate.png" alt="Executable sub-process diagram" width="1000">
+</p>

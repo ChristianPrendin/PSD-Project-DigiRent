@@ -37,6 +37,30 @@ paths:
         '202':
           description: Partner rental request accepted. Apartment list will be sent asynchronously.
 
+  /partners/{partnerId}/notifications:
+    post:
+      summary: Notify commercial partner about the negotiation outcome
+      operationId: notifyPartner
+      description: |
+        DigiRent informs a previously contacted Commercial Partner about
+        the outcome of the negotiation for a given rental request: whether
+        one of the partner's own apartments was selected, whether the
+        customer proceeded with a different option instead, or whether
+        the customer withdrew from the process entirely. Sent to every
+        partner that submitted an apartment list for that rental request,
+        not only to the partner directly involved in the outcome.
+      parameters:
+        - $ref: '#/components/parameters/partnerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerNotification'
+      responses:
+        '200':
+          description: Notification delivered to partner.
+
   /partners/{partnerId}/payments:
     post:
       summary: Transfer payment and fee to commercial partner
@@ -90,6 +114,33 @@ components:
         endDate:
           type: string
           format: date
+
+    PartnerNotification:
+      type: object
+      required: [rentalId, stage]
+      properties:
+        rentalId:
+          type: string
+        stage:
+          type: string
+          description: |
+            Outcome of the negotiation as it pertains to this partner:
+            - apartment_selected: the customer selected one of this
+              partner's apartments; the rental is proceeding with this
+              partner.
+            - apartment_not_selected: the negotiation concluded (accepted
+              elsewhere, or exhausted) without this partner's offer being
+              chosen.
+            - customer_withdrew: the customer withdrew from the rental
+              process entirely while this partner's offer was still under
+              consideration.
+          enum:
+            - apartment_selected
+            - apartment_not_selected
+            - customer_withdrew
+        message:
+          type: string
+          description: Optional human-readable text for display purposes.
 
     PartnerPayment:
       type: object
